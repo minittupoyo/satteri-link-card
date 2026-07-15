@@ -1,6 +1,6 @@
 # @minittupoyo/satteri-link-card
 
-A high-performance [Sätteri](https://github.com/bruits/satteri) plugin that transforms bare links (paragraphs containing a single URL) into beautiful, content-rich, and search-engine-optimized Open Graph link cards.
+A high-performance [Sätteri](https://github.com/bruits/satteri) plugin that transforms bare links (paragraphs containing a single URL) into beautiful, content-rich, and search-engine-optimized Open Graph link cards (inspired by and compatible with [remark-link-card-plus](https://github.com/okaryo/remark-link-card-plus)).
 
 ## Features
 

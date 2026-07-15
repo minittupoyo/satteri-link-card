@@ -1,6 +1,6 @@
 # @minittupoyo/satteri-link-card
 
-高速な Markdown/MDX 処理パイプラインである [Sätteri](https://github.com/bruits/satteri) のプラグインです。単一の URL のみが書かれた段落を、美しくコンテンツが豊富な Open Graph リンクカードに自動変換します。
+高速な Markdown/MDX 処理パイプラインである [Sätteri](https://github.com/bruits/satteri) のプラグインです。単一の URL のみが書かれた段落を、美しくコンテンツが豊富な Open Graph リンクカードに自動変換します（[remark-link-card-plus](https://github.com/okaryo/remark-link-card-plus) を参考に作成されています）。
 
 ## 特徴
 
