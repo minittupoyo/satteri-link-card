@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.DS_Store
+
+# Cache directory if they test in this repo
+public/satteri-link-card
+dist/satteri-link-card
