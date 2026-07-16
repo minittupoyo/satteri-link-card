@@ -1,6 +1,6 @@
 {
   "name": "@minittupoyo/satteri-link-card",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Satteri plugin to generate link cards (similar to remark-link-card-plus)",
   "main": "index.js",
   "types": "index.d.ts",
