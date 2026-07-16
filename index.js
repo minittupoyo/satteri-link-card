@@ -13,9 +13,16 @@ const defaultOptions = {
   ignoreExtensions: [],
   timeoutMs: 10_000,
 };
-const pluginCacheVersion = '7';
+const pluginCacheVersion = '8';
 const cacheDirectoryName = 'satteri-link-card';
-const buildRenderKey = process.env.ASTRO_COMMAND === 'build' ? Date.now().toString(36) : 'dev';
+const knownImageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.ico', '.avif'];
+let buildRenderKey = 'dev';
+if (process.env.ASTRO_COMMAND === 'build') {
+  if (!process.env.SATTERI_LINK_CARD_BUILD_KEY) {
+    process.env.SATTERI_LINK_CARD_BUILD_KEY = Date.now().toString(36);
+  }
+  buildRenderKey = process.env.SATTERI_LINK_CARD_BUILD_KEY;
+}
 
 /**
  * Create a Satteri-compatible copy of satteri-link-card.
@@ -54,11 +61,16 @@ export function createSatteriLinkCardPlus(options = {}) {
 
       let og;
       try {
-        og = ogCache.get(url.href);
-        if (!og) {
-          og = await getOgData(url, config);
-          ogCache.set(url.href, og);
+        let ogPromise = ogCache.get(url.href);
+        if (!ogPromise) {
+          ogPromise = getOgData(url, config);
+          ogCache.set(url.href, ogPromise);
+          // Evict failed fetches so a transient error doesn't permanently poison
+          // the in-memory cache for every later occurrence of the same URL.
+          ogPromise.catch(() => ogCache.delete(url.href));
         }
+
+        og = await ogPromise;
 
         if (typeof config.ogTransformer === 'function') {
           og = await config.ogTransformer(og, url);
@@ -194,7 +206,14 @@ async function cacheAsset(assetUrl, timeoutMs, fallbackUrl = assetUrl) {
     const response = await fetchWithTimeout(assetUrl, timeoutMs);
     if (!response.ok) return fallbackUrl;
 
-    const extension = pathnameExtension ?? extensionFromContentType(response.headers.get('content-type')) ?? '.bin';
+    // Only persist assets we can confirm are actual images. Otherwise a
+    // non-image response (e.g. an HTML error page served with a 200 status)
+    // would get cached and rendered as a broken <img>.
+    const extension = knownImageExtensions.includes(pathnameExtension)
+      ? pathnameExtension
+      : extensionFromContentType(response.headers.get('content-type'));
+    if (!extension) return fallbackUrl;
+
     const fileName = `${cacheKey}${extension}`;
     const filePath = path.join(cacheDir, fileName);
     const bytes = new Uint8Array(await response.arrayBuffer());
@@ -216,9 +235,7 @@ function getFirstImageUrl(image) {
 }
 
 async function findCachedFile(cacheDir, cacheKey) {
-  const extensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.ico', '.avif', '.bin'];
-
-  for (const extension of extensions) {
+  for (const extension of knownImageExtensions) {
     const fileName = `${cacheKey}${extension}`;
 
     try {
